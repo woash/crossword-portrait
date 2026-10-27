@@ -1,0 +1,169 @@
+<style>
+    /* In Webflow, default to the parent width. Optionally set
+       --crossword-embed-height: 600px on the embed to constrain its height. */
+    .crossword-embed {
+      width: 100%; height: var(--crossword-embed-height, auto);
+      aspect-ratio: 16 / 20;
+      display: grid; place-items: center; overflow: hidden;
+    }
+    .crossword-portrait {
+      --crossword-pink: #F2A7BD;
+      --crossword-line: rgba(0,0,0,.75);
+      width: 100%; margin: 0; color: #000;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      container-type: inline-size;
+    }
+    .crossword-portrait, .crossword-portrait * { box-sizing: border-box; }
+    .crossword-portrait__surface { position: relative; width: 100%; overflow: hidden; aspect-ratio: 16 / 20; }
+    .crossword-portrait__photo { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+    .crossword-grid {
+      position: absolute; inset: 0; display: grid;
+      grid-template-columns: repeat(var(--cols), minmax(0,1fr));
+      grid-template-rows: repeat(var(--rows), minmax(0,1fr));
+    }
+    .crossword-cell {
+      position: relative; display: flex; align-items: center; justify-content: center;
+      min-width: 0; min-height: 0; margin: 0; padding: 0;
+      border: 0; border-right: 1px solid var(--crossword-line); border-bottom: 1px solid var(--crossword-line);
+      border-radius: 0; background: transparent; color: #000;
+      font-family: inherit; font-size: clamp(8px,2.2vw,22px); font-size: clamp(8px,2.2cqi,22px);
+      font-weight: 400; line-height: 1; text-transform: uppercase; cursor: default;
+      appearance: none; -webkit-appearance: none;
+    }
+    .crossword-cell--last-column { border-right: 0; }
+    .crossword-cell--last-row { border-bottom: 0; }
+    .crossword-cell--letter:not(.is-revealed), .crossword-cell--toggleable { cursor: pointer; }
+    .crossword-cell__number { color: #fff; position: absolute; top: 3px; left: 4px; font-size: clamp(7px, 1.3cqi, 10px); line-height: 1; font-weight: 500; }
+    .crossword-cell__letter { visibility: hidden; }
+    .crossword-cell.is-revealed { background: var(--crossword-pink); }
+    .is-revealed .crossword-cell__letter { visibility: visible; }
+    .crossword-cell--letter:focus-visible { outline: 2px solid #000; outline-offset: -3px; }
+    @media (hover: hover) {
+      .crossword-cell--letter:not(.is-revealed):hover { background: rgba(242,167,189,.15); }
+    }
+  </style>
+<div class="crossword-embed">
+  <figure class="crossword-portrait" id="crossword-portrait">
+    <div class="crossword-portrait__surface">
+      <!-- Replace the image src URL below to change the photograph. -->
+      <img class="crossword-portrait__photo" src="https://cdn.prod.website-files.com/64dfd6f3c8bff842f83e0e0e/6ae0e42d0322355db2b1f0dc_WhatsApp%20Image%202026-02-01%20at%2013.51.37.jpeg" alt="Black and white portrait by a window" loading="lazy">
+      <div class="crossword-grid" role="group" aria-label="Interactive portrait. Reveal letters individually."></div>
+    </div>
+  </figure>
+  </div>
+  <script>
+  (() => {
+    const GRID_ROWS = 20;
+    const GRID_COLS = 16;
+    const allowToggle = false;
+
+    // Coordinates start at 0. Set spacing to 0 to join multiword answers.
+    const words = [
+      {
+        id: "math", answer: "MATH TEACHER",
+        row: 7, // start row
+        col: 3, // start column
+        direction: "horizontal", // horizontal / vertical
+        spacing: 0
+      },
+      { id: "karaoke", answer: "KARAOKE SUPERSTAR", row: 1, col: 12, direction: "vertical", spacing: 0 },
+      { id: "about", answer: "ABOUT TIME", row: 11, col: 4, direction: "horizontal", spacing: 0 },
+      { id: "kids", answer: "JUST KIDS", row: 13, col: 5, direction: "horizontal", spacing: 0 },
+      { id: "code", answer: "CODE", row: 5, col: 11, direction: "horizontal" },
+      { id: "jewelry", answer: "JEWELRY", row: 3, col: 7, direction: "horizontal" }
+    ];
+
+    const root = document.getElementById("crossword-portrait");
+    const surface = root.querySelector(".crossword-portrait__surface");
+    const grid = root.querySelector(".crossword-grid");
+    surface.style.aspectRatio = `${GRID_COLS} / ${GRID_ROWS}`;
+    const frame = root.closest(".crossword-embed");
+    const fit = () => {
+      const { width, height } = frame.getBoundingClientRect();
+      root.style.width = `${Math.min(width, height * GRID_COLS / GRID_ROWS)}px`;
+    };
+    new ResizeObserver(fit).observe(frame);
+    fit();
+    grid.style.setProperty("--cols", GRID_COLS);
+    grid.style.setProperty("--rows", GRID_ROWS);
+    const letters = new Map();
+    const starts = new Map();
+    // Number answer starts in reading order.
+    [...words].sort((a, b) => a.row - b.row || a.col - b.col).forEach((word, index) => {
+      word.number = index + 1;
+      starts.set(`${word.row},${word.col}`, word.number);
+
+    });
+
+    words.forEach(word => {
+      const vertical = word.direction === "vertical";
+      const spacing = Math.max(0, Math.floor(word.spacing ?? 0));
+      let offset = 0;
+      word.answer.trim().toUpperCase().split(/\s+/).forEach((part, index) => {
+        if (index > 0) offset += spacing;
+        for (const letter of part) {
+          const row = word.row + (vertical ? offset : 0);
+          const col = word.col + (vertical ? 0 : offset);
+          const key = `${row},${col}`;
+          if (row < 0 || row >= GRID_ROWS || col < 0 || col >= GRID_COLS) {
+            throw new Error(`"${word.id}" extends outside the grid.`);
+          }
+          if (letters.has(key) && letters.get(key) !== letter) {
+            throw new Error(`Conflicting letters at row ${row}, col ${col}. Move "${word.id}".`);
+          }
+          letters.set(key, letter);
+          offset++;
+        }
+      });
+    });
+
+    const fragment = document.createDocumentFragment();
+    for (let row = 0; row < GRID_ROWS; row++) {
+      for (let col = 0; col < GRID_COLS; col++) {
+        const letter = letters.get(`${row},${col}`);
+        const cell = document.createElement(letter ? "button" : "div");
+        cell.className = "crossword-cell";
+        if (col === GRID_COLS - 1) cell.classList.add("crossword-cell--last-column");
+        if (row === GRID_ROWS - 1) cell.classList.add("crossword-cell--last-row");
+        if (letter) {
+          cell.type = "button";
+          cell.classList.add("crossword-cell--letter");
+          const startNumber = starts.get(`${row},${col}`);
+          const hiddenLabel = startNumber ? `Reveal hidden letter, clue ${startNumber}` : "Reveal hidden letter";
+          cell.setAttribute("aria-label", hiddenLabel);
+          if (startNumber) {
+            const marker = document.createElement("span");
+            marker.className = "crossword-cell__number";
+            marker.textContent = startNumber;
+            marker.setAttribute("aria-hidden", "true");
+            cell.appendChild(marker);
+          }
+          if (allowToggle) {
+            cell.classList.add("crossword-cell--toggleable");
+            cell.setAttribute("aria-pressed", "false");
+          }
+          const character = document.createElement("span");
+          character.className = "crossword-cell__letter";
+          character.setAttribute("aria-hidden", "true");
+          cell.appendChild(character);
+          // Native buttons handle click, Enter, and Space.
+          cell.addEventListener("click", () => {
+            const revealed = cell.classList.contains("is-revealed");
+            if (revealed && !allowToggle) return;
+            const nextRevealed = !revealed;
+            character.textContent = nextRevealed ? letter : "";
+            cell.classList.toggle("is-revealed", nextRevealed);
+            cell.setAttribute("aria-label", nextRevealed
+              ? (allowToggle ? `Hide letter ${letter}` : `Revealed letter ${letter}`)
+              : hiddenLabel);
+            if (allowToggle) cell.setAttribute("aria-pressed", String(nextRevealed));
+          });
+        } else {
+          cell.setAttribute("aria-hidden", "true");
+        }
+        fragment.appendChild(cell);
+      }
+    }
+    grid.appendChild(fragment);
+  })();
+  </script>
