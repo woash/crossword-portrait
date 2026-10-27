@@ -67,6 +67,8 @@
     const GRID_ROWS = 20;
     const GRID_COLS = 16;
     const allowToggle = false;
+    // A few visible letters hint at the interaction. Coordinates are zero-based.
+    const initiallyRevealed = new Set(["1,12", "3,7", "7,3", "11,8", "13,5"]);
 
     // Coordinates start at 0. Set spacing to 0 to join multiword answers.
     const words = [
@@ -157,6 +159,12 @@
           character.className = "crossword-cell__letter";
           character.setAttribute("aria-hidden", "true");
           cell.appendChild(character);
+          if (initiallyRevealed.has(`${row},${col}`)) {
+            character.textContent = letter;
+            cell.classList.add("is-revealed");
+            cell.setAttribute("aria-label", allowToggle ? `Hide letter ${letter}` : `Revealed letter ${letter}`);
+            if (allowToggle) cell.setAttribute("aria-pressed", "true");
+          }
           // Native buttons handle click, Enter, and Space.
           cell.addEventListener("click", () => {
             const revealed = cell.classList.contains("is-revealed");
