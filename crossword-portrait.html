@@ -12,7 +12,7 @@
        --crossword-embed-height: 600px on the embed to constrain its height. */
     .crossword-embed {
       width: 100%; height: var(--crossword-embed-height, auto);
-      aspect-ratio: 20 / 18;
+      aspect-ratio: 22 / 20;
       display: grid; place-items: center; overflow: hidden;
     }
     .crossword-portrait {
@@ -23,7 +23,7 @@
       container-type: inline-size;
     }
     .crossword-portrait, .crossword-portrait * { box-sizing: border-box; }
-    .crossword-portrait__surface { position: relative; width: 100%; overflow: hidden; aspect-ratio: 20 / 18; }
+    .crossword-portrait__surface { position: relative; width: 100%; overflow: hidden; aspect-ratio: 22 / 20; }
     .crossword-portrait__photo { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
     .crossword-grid {
       position: absolute; inset: 0; display: grid;
@@ -65,8 +65,8 @@
   </div>
   <script>
   (() => {
-    const GRID_ROWS = 18;
-    const GRID_COLS = 20;
+    const GRID_ROWS = 20;
+    const GRID_COLS = 22;
     const allowToggle = true;
     // A few visible letters hint at the interaction. Coordinates are zero-based.
     const initiallyRevealed = new Set(["1,15", "3,10", "7,6", "11,11", "14,10"]);
