@@ -58,22 +58,22 @@
     const GRID_COLS = 20;
     const allowToggle = true;
     // A few visible letters hint at the interaction. Coordinates are zero-based.
-    const initiallyRevealed = new Set(["1,12", "3,7", "7,3", "11,8", "14,7"]);
+    const initiallyRevealed = new Set(["1,15", "3,10", "7,6", "11,11", "14,10"]);
 
     // Coordinates start at 0. Set spacing to 0 to join multiword answers.
     const words = [
       {
         id: "math", answer: "MATH TEACHER",
         row: 7, // start row
-        col: 3, // start column
+        col: 6, // start column
         direction: "horizontal", // horizontal / vertical
         spacing: 0
       },
-      { id: "karaoke", answer: "KARAOKE SUPERSTAR", row: 1, col: 12, direction: "vertical", spacing: 0 },
-      { id: "about", answer: "ABOUT TIME", row: 11, col: 4, direction: "horizontal", spacing: 0 },
-      { id: "kids", answer: "JUST KIDS", row: 10, col: 7, direction: "vertical", spacing: 0 },
-      { id: "code", answer: "CODE", row: 5, col: 11, direction: "horizontal" },
-      { id: "jewelry", answer: "JEWELRY", row: 3, col: 7, direction: "horizontal" }
+      { id: "karaoke", answer: "KARAOKE SUPERSTAR", row: 1, col: 15, direction: "vertical", spacing: 0 },
+      { id: "about", answer: "ABOUT TIME", row: 11, col: 7, direction: "horizontal", spacing: 0 },
+      { id: "kids", answer: "JUST KIDS", row: 10, col: 10, direction: "vertical", spacing: 0 },
+      { id: "code", answer: "CODE", row: 5, col: 14, direction: "horizontal" },
+      { id: "jewelry", answer: "JEWELRY", row: 3, col: 10, direction: "horizontal" }
     ];
 
     const root = document.getElementById("crossword-portrait");
