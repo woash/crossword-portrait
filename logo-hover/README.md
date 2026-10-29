@@ -8,6 +8,6 @@ Paste the contents of `webflow-embed.html` into a Webflow Code Embed element. Ma
 
 ## Editing
 
-Edit `build.py` and run `python3 build.py` to regenerate `index.html` and `section-source.html`. Five hosted project images are listed in `images`. The SVG is in `assets/logo.svg`.
+Edit `build.py` and run `python3 build.py` to regenerate `index.html` and `section-source.html`. Hosted project images are listed in `images`; the first three are displayed. The SVG is in `assets/logo.svg`.
 
-The centered logo alternates solid-black pixel contours and original SVG sections. Reduced-motion preferences show the original SVG. The enlarged hover area opens project previews; clicking the logo or preview navigates to https://www.aashitaverma.com/work in the full page.
+The original SVG words separate periodically to reveal three images. Each opening features the next image with two thinner previews. Hovering any image enlarges it to the same size and pauses the cycle. Reduced-motion preferences keep the images revealed without the opening cycle. Clicking navigates to https://www.aashitaverma.com/work in the full page.
